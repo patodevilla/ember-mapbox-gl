@@ -1,9 +1,9 @@
 {{#if glSupported}}
   {{#if map}}
     {{yield (hash
-      call=(component 'mapbox-gl-call' obj=map)
+      call=null
       control=(component 'mapbox-gl-control' map=map)
-      image=(component 'mapbox-gl-image' map=map)
+      image=null
       layer=(component 'mapbox-gl-layer' map=map)
       marker=(component 'mapbox-gl-marker' map=map)
       on=(component 'mapbox-gl-on' eventSource=map)

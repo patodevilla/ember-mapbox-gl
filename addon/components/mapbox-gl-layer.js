@@ -4,11 +4,23 @@ import { getProperties, get, computed } from '@ember/object';
 import { guidFor } from '@ember/object/internals';
 import { reads } from '@ember/object/computed';
 import Component from '@ember/component';
+import { assert } from '@ember/debug';
+
+/**
+  This is a component for a Mabox layer object.
+  can be set to longLived so it is not destroyed along with its component.
+*/
 
 export default Component.extend({
   tagName: '',
 
   map: null,
+
+  /**
+   * @param boolean
+   * @description Set to longLived so it is not destroyed along with its component
+  */
+  longLived: false,
 
   /**
    * @param object
@@ -30,34 +42,25 @@ export default Component.extend({
   _sourceId: reads('layer.source'),
 
   /**
-   * @private
+   * @private the id of the layer bound to this component
    */
   _layerId: computed('layer.id', function() {
-    return get(this, 'layer.id') || guidFor(this);
+    return get(this, 'layer.id');
   }).readOnly(),
 
   /**
    * @private
    */
   _layerType: computed('layer.type', function() {
-    return get(this, 'layer.type') || 'line';
+    return get(this, 'layer.type');
   }).readOnly(),
 
-  _envConfig: computed('_layerType', function() {
-    const layerType = get(this, '_layerType');
-    return get(getOwner(this).resolveRegistration('config:environment'), `mapbox-gl.${layerType}`);
+  _layout: computed('layer.layout', function() {
+    return assign({}, get(this, 'layer.layout'));
   }).readOnly(),
 
-  _layout: computed('_envConfig.layout', 'layer.layout', function() {
-    return assign({},
-      get(this, '_envConfig.layout'),
-      get(this, 'layer.layout'));
-  }).readOnly(),
-
-  _paint: computed('_envConfig.paint', 'layer.paint', function() {
-    return assign({},
-      get(this, '_envConfig.paint'),
-      get(this, 'layer.paint'));
+  _paint: computed('layer.paint', function() {
+    return assign({}, get(this, 'layer.paint'));
   }).readOnly(),
 
   _layer: computed('layer', '_layerId', '_layerType', '_sourceId', '_layout', '_paint', function() {
@@ -85,9 +88,19 @@ export default Component.extend({
   init() {
     this._super(...arguments);
 
+    assert("layer type needs to be specified", get(this, 'layer.type'));
+    assert("layer id needs to be specified", get(this, 'layer.id'));
+    
     const { _layer, before } = getProperties(this, '_layer', 'before');
 
-    this.map.addLayer(_layer, before);
+    if(this.map.getLayer(this._layerId)){
+      window.console.log('unhide layer');
+      this.map.setLayoutProperty(this._layerId, "visibility", "visible");
+    }else{
+      window.console.log('add layer');
+      this.map.addLayer(_layer, before);
+    }
+
   },
 
   didUpdateAttrs() {
@@ -113,6 +126,14 @@ export default Component.extend({
   willDestroy() {
     this._super(...arguments);
 
-    this.map.removeLayer(get(this, '_layerId'));
+    if(this.get('longLived')){
+      window.console.log('hide layer');
+      this.map.setLayoutProperty(get(this, '_layerId'), "visibility", "none");
+    }else{
+      window.console.log('remove layer');
+      this.map.removeLayer(get(this, '_layerId'));
+    }
+
   }
+
 });

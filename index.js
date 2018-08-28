@@ -7,6 +7,10 @@ const Path = require('path');
 module.exports = {
   name: 'ember-mapbox-gl',
 
+  isDevelopingAddon: function() {
+      return true;
+  },
+
   treeForStyles(tree) {
     const mapboxGlTree = new Funnel(Path.dirname(require.resolve('mapbox-gl')), {
       files: [ 'mapbox-gl.css' ],
@@ -43,11 +47,11 @@ module.exports = {
         ],
         destDir: '/assets'
       });
-  
+
       if (tree) {
         return new MergeTrees([ tree, mapboxGlTree ]);
       }
-  
+
       return mapboxGlTree;
     }
 
