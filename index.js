@@ -8,7 +8,7 @@ module.exports = {
   name: 'ember-mapbox-gl',
 
   isDevelopingAddon: function() {
-      return true;
+      return false;
   },
 
   treeForStyles(tree) {
