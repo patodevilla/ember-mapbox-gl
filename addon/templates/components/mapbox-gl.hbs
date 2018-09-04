@@ -2,13 +2,13 @@
   {{#if map}}
     {{yield (hash
       call=null
-      control=(component 'mapbox-gl-control' map=map)
+      control=(component 'mapbox-gl-control' map=map longLived=longLived)
       image=null
-      layer=(component 'mapbox-gl-layer' map=map)
+      layer=(component 'mapbox-gl-layer' map=map longLived=longLived)
       marker=(component 'mapbox-gl-marker' map=map)
       on=(component 'mapbox-gl-on' eventSource=map)
       popup=(component 'mapbox-gl-popup' map=map)
-      source=(component 'mapbox-gl-source' map=map)
+      source=(component 'mapbox-gl-source' map=map longLived=longLived)
     )}}
   {{/if}}
 {{else}}
