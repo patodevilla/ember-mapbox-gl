@@ -41,7 +41,7 @@ export default Service.extend({
     @private
   */
   _createMap(initOptions, longLived) {
-    window.console.log('create map');
+    //window.console.log('create map');
 
     //create map DOM element
     let element = document.createElement('div');

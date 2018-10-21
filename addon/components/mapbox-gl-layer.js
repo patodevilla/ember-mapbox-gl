@@ -94,10 +94,10 @@ export default Component.extend({
     const { _layer, before } = getProperties(this, '_layer', 'before');
 
     if(this.map.getLayer(this._layerId)){
-      window.console.log('unhide layer');
+      //window.console.log('unhide layer');
       this.map.setLayoutProperty(this._layerId, "visibility", "visible");
     }else{
-      window.console.log('add layer');
+      //window.console.log('add layer');
       this.map.addLayer(_layer, before);
     }
 
@@ -127,10 +127,10 @@ export default Component.extend({
     this._super(...arguments);
 
     if(this.get('longLived')){
-      window.console.log('hide layer');
+      //window.console.log('hide layer');
       this.map.setLayoutProperty(get(this, '_layerId'), "visibility", "none");
     }else{
-      window.console.log('remove layer');
+      //window.console.log('remove layer');
       this.map.removeLayer(get(this, '_layerId'));
     }
 
