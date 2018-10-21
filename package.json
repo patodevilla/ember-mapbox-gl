@@ -50,11 +50,11 @@
     "eslint-plugin-ember": "^5.0.1",
     "eslint-plugin-node": "^7.0.1",
     "loader.js": "^4.2.3",
-    "mapbox-gl": "^0.48.0",
+    "mapbox-gl": "0.48.0",
     "qunit-dom": "^0.7.0"
   },
   "peerDependencies": {
-    "mapbox-gl": ">=0.38"
+    "mapbox-gl": "0.48.0"
   },
   "engines": {
     "node": "6.* || 8.* || >= 10.*"
