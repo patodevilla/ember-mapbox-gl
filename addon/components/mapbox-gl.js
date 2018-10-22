@@ -72,7 +72,8 @@ export default Component.extend({
   _setup() {
 
     let obj = this.mapsService.getMap(this.mapId, this.initOptions, this.longLived);
-    this.element.prepend(obj.element) //prepend the map html element into component
+    //append the map html element into component
+    this.element.appendChild(obj.element);
 
     let map = obj.map;
     if(map.hasLoaded){
