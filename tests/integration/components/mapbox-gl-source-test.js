@@ -1,27 +1,21 @@
 import { assign } from '@ember/polyfills';
 import { module, test } from 'qunit';
 import { setupRenderingTest } from 'ember-qunit';
-import { clearRender, render, settled } from '@ember/test-helpers';
-import createMap from '../../helpers/create-map';
-import hbs from 'htmlbars-inline-precompile';
+import { clearRender, render, settled, waitFor } from '@ember/test-helpers';
+import setupMap from '../../helpers/create-map';
+import { hbs } from 'ember-cli-htmlbars';
 import Sinon from 'sinon';
-import { defer } from 'rsvp';
 
 module('Integration | Component | mapbox gl source', function(hooks) {
   setupRenderingTest(hooks);
+  setupMap(hooks);
 
-  hooks.before(async function() {
+  hooks.before(function() {
     this.sandbox = Sinon.createSandbox();
-
-    this.map = await createMap();
   });
 
   hooks.afterEach(function() {
     this.sandbox.restore();
-  });
-
-  hooks.after(function() {
-    this.map.remove();
   });
 
   test('it creates a sourceId if one is not provided', async function(assert) {
@@ -263,21 +257,19 @@ module('Integration | Component | mapbox gl source', function(hooks) {
       options: sourceOptions
     });
 
-    const defered = defer();
     this.mapLoaded = (map) => {
       addSourceSpy = this.sandbox.spy(map, 'addSource');
       removeSourceSpy = this.sandbox.spy(map, 'removeSource');
-
-      defered.resolve();
     };
 
     await render(hbs`
       {{#mapbox-gl mapLoaded=mapLoaded as |map|}}
         {{map.source sourceId=sourceId options=options}}
+        <div id='loaded-sigil'></div>
       {{/mapbox-gl}}
     `);
 
-    await defered.promise;
+    await waitFor('#loaded-sigil');
 
     assert.ok(addSourceSpy.calledOnce, 'addSource called once');
     assert.equal(addSourceSpy.firstCall.args[0], this.sourceId, 'correct sourceId is added');

@@ -1,43 +1,4 @@
-# ember-mapbox-gl
-
-[![Latest NPM release][npm-badge]][npm-badge-url]
-[![TravisCI Build Status][travis-badge]][travis-badge-url]
-[![Ember Observer Score][ember-observer-badge]][ember-observer-url]
-
-[npm-badge]: https://img.shields.io/npm/v/ember-mapbox-gl.svg
-[npm-badge-url]: https://www.npmjs.com/package/ember-mapbox-gl
-[travis-badge]: https://img.shields.io/travis/kturney/ember-mapbox-gl/master.svg
-[travis-badge-url]: https://travis-ci.org/kturney/ember-mapbox-gl
-[ember-observer-badge]: http://emberobserver.com/badges/ember-mapbox-gl.svg
-[ember-observer-url]: http://emberobserver.com/addons/ember-mapbox-gl
-
-Ember integration with [mapbox-gl-js](https://www.mapbox.com/mapbox-gl-js/api/).
-
-## Installation
-
-```sh
-ember install ember-mapbox-gl
-```
-
-Then, add your Mapbox access token to `config/environment.js`:
-```javascript
-module.exports = function(environment) {
-  let ENV = {
-    'mapbox-gl': {
-      accessToken: 'ACCESS TOKEN HERE'
-    },
-}
-```
-
-## Compatibility
-* Ember.js v3.4 or above
-* Ember CLI v2.13 or above
-* Node.js v8 or above
-
-## API Documentation
-See the detailed [API Documentation](API.md).
-
-## Example
+# Templates
 
 <strong>Note:</strong> The example below uses [ember-composable-helpers](https://github.com/DockYard/ember-composable-helpers).
 

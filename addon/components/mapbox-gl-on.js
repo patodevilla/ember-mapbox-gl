@@ -4,6 +4,36 @@ import { isPresent } from '@ember/utils';
 import { run } from '@ember/runloop';
 import Component from '@ember/component';
 
+/**
+  Adds an action to listen for [mapbox events](https://www.mapbox.com/mapbox-gl-js/api/#map#on).
+  
+  ### Positional Parameters
+  - `eventSource`
+    - The first positional parameter. The event type to listen for.
+  - `action`
+    - The second positional parameter. The action provided by the consumer to call when the event is triggered.
+
+  ### Example
+  ```hbs
+  {{#mapbox-gl as |map|}}
+    {{map.on 'click' (action 'mapClicked')}}
+  {{/mapbox-gl}}
+  ```
+
+  ```javascript
+  import Controller from '@ember/controller';
+
+  export default Controller.extend({
+    actions: {
+      mapClicked({ target: map, point }) {
+        console.log(map, point);
+      }
+    }
+  });
+  ```
+
+  @class MapboxGLOn
+ */
 const MapboxGlOnComponent = Component.extend({
   tagName: '',
 
@@ -19,7 +49,7 @@ const MapboxGlOnComponent = Component.extend({
     const event = get(this, 'event');
     assert(`mapbox-gl-event requires event to be a string, was ${event}`, typeof event === 'string');
 
-    return event.toLowerCase();
+    return event;
   }),
 
   _layerId: computed('layerId', '_action', function () {
@@ -89,7 +119,7 @@ const MapboxGlOnComponent = Component.extend({
       return;
     }
 
-    this.sendAction('_action', ...arguments); // eslint-disable-line ember/closure-actions
+    get(this, '_action')(...arguments);
   }
 });
 

@@ -1,7 +1,5 @@
 import { assign } from '@ember/polyfills';
-import { getOwner } from '@ember/application';
 import { getProperties, get, computed } from '@ember/object';
-import { guidFor } from '@ember/object/internals';
 import { reads } from '@ember/object/computed';
 import Component from '@ember/component';
 import { assert } from '@ember/debug';
@@ -11,6 +9,36 @@ import { assert } from '@ember/debug';
   can be set to longLived so it is not destroyed along with its component.
 */
 
+/**
+  Adds a data source to the map. 
+  The API matches the mapbox [source docs](https://www.mapbox.com/mapbox-gl-js/api/#sources).
+ 
+  Example:
+  ```hbs
+  {{#mapbox-gl as |map|}}
+    {{#map.source options=(hash
+      type='geojson'
+      data=(hash
+        type='FeatureCollection'
+        features=(array
+          (hash
+            type='Feature'
+            geometry=(hash
+              type='Point'
+              coordinates=(array -96.7969879 32.7766642)
+            )
+          )
+        )
+      )) as |source|}}
+      {{source.layer layer=(hash
+          type='circle'
+          paint=(hash circle-color='#007cbf' circle-radius=10))}}
+    {{/map.source}}
+  {{/mapbox-gl}}
+  ```
+
+  @class MapboxGLSource
+*/
 export default Component.extend({
   tagName: '',
 
@@ -23,25 +51,30 @@ export default Component.extend({
   longLived: false,
 
   /**
-   * @param object
-   * @description The style layer to add, conforming to the Mapbox Style Specification's layer definition.
-   * {@link https://www.mapbox.com/mapbox-gl-js/api/#map#addlayer Mapbox}
+    @argument layer
+    @type {Object}
+    @description 
+    A hash to pass on to the mapbox [layer](https://www.mapbox.com/mapbox-gl-js/style-spec/#layers).
   */
   layer: null,
 
   /**
-   * @param string
-   * @description The ID of an existing layer to insert the new layer before. If this argument is omitted, the layer will be appended to the end of the layers array.
-   * {@link https://www.mapbox.com/mapbox-gl-js/api/#map#addlayer Mapbox}
+    @argument before
+    @type {String}
+    @description 
+    The ID of an existing layer to insert the new layer before.
+    If this argument is omitted, the layer will be appended to the end of the layers array.
   */
   before: null,
 
   /**
+   * @property _sourceId
    * @private for use by mapbox-gl-source to pass in its sourceId
    */
   _sourceId: reads('layer.source'),
 
   /**
+   * @property _layerId
    * @private the id of the layer bound to this component
    */
   _layerId: computed('layer.id', function() {
@@ -49,6 +82,7 @@ export default Component.extend({
   }).readOnly(),
 
   /**
+   * @property _layerType
    * @private
    */
   _layerType: computed('layer.type', function() {
@@ -126,10 +160,10 @@ export default Component.extend({
   willDestroy() {
     this._super(...arguments);
 
-    if(this.get('longLived')){
+    if (this.longLived) {
       //window.console.log('hide layer');
       this.map.setLayoutProperty(get(this, '_layerId'), "visibility", "none");
-    }else{
+    } else {
       //window.console.log('remove layer');
       this.map.removeLayer(get(this, '_layerId'));
     }

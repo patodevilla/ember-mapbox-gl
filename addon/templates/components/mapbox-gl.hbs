@@ -1,16 +1,20 @@
-{{#if glSupported}}
-  {{#if map}}
-    {{yield (hash
-      call=null
-      control=(component 'mapbox-gl-control' map=map longLived=longLived)
-      image=null
-      layer=(component 'mapbox-gl-layer' map=map longLived=longLived)
-      marker=(component 'mapbox-gl-marker' map=map)
-      on=(component 'mapbox-gl-on' eventSource=map)
-      popup=(component 'mapbox-gl-popup' map=map)
-      source=(component 'mapbox-gl-source' map=map longLived=longLived)
-    )}}
+{{#if this._loader.isLoaded}}
+  {{yield
+    (hash
+      control=(component 'mapbox-gl-control' map=this._loader.map longLived=this.longLived)
+      layer=(component 'mapbox-gl-layer' map=this._loader.map longLived=this.longLived)
+      marker=(component 'mapbox-gl-marker' map=this._loader.map MapboxGl=this._loader.MapboxGl)
+      on=(component 'mapbox-gl-on' eventSource=this._loader.map)
+      popup=(component 'mapbox-gl-popup' map=this._loader.map MapboxGl=this._loader.MapboxGl)
+      source=(component 'mapbox-gl-source' map=this._loader.map longLived=this.longLived)
+      instance=this._loader.map
+    )
+  }}
+{{else if this._loader.error}}
+  {{#if (hasBlock 'inverse')}}
+    {{yield this._loader.error to='inverse'}}
+  {{else}}
+    {{! template-lint-disable no-log }}
+    {{log 'error rendering mapbox-gl' this._loader.error}}
   {{/if}}
-{{else}}
-  {{yield to='inverse'}}
 {{/if}}

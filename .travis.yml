@@ -1,10 +1,10 @@
 ---
 language: node_js
 node_js:
-  - "6"
+  - "8"
 
-sudo: false
-dist: trusty
+services:
+  - xvfb
 
 addons:
   firefox: latest
@@ -17,37 +17,40 @@ env:
   global:
     # See https://git.io/vdao3 for details.
     - JOBS=1
-  matrix:
-    - EMBER_TRY_SCENARIO=ember-lts-2.12
-    - EMBER_TRY_SCENARIO=ember-lts-2.16
-    - EMBER_TRY_SCENARIO=ember-lts-2.18
-    - EMBER_TRY_SCENARIO=ember-release
-    - EMBER_TRY_SCENARIO=ember-beta
-    - EMBER_TRY_SCENARIO=ember-default
-    - EMBER_TRY_SCENARIO=ember-default-mapbox-gl-0.38
-    - EMBER_TRY_SCENARIO=ember-default-mapbox-gl-0.39
-    - EMBER_TRY_SCENARIO=ember-default-mapbox-gl-0.40
-    - EMBER_TRY_SCENARIO=ember-default-mapbox-gl-0.41
-    - EMBER_TRY_SCENARIO=ember-default-mapbox-gl-0.42
-    - EMBER_TRY_SCENARIO=ember-default-mapbox-gl-0.43
-    - EMBER_TRY_SCENARIO=ember-default-mapbox-gl-0.44
-    - EMBER_TRY_SCENARIO=ember-default-mapbox-gl-0.45
 
-matrix:
-  fast_finish: true
-  allow_failures:
-    - env: EMBER_TRY_SCENARIO=ember-canary
+branches:
+  only:
+    - master
+    # npm version tags
+    - /^v\d+\.\d+\.\d+/
+
+jobs:
+  fail_fast: true
+
+  include:
+    # runs linting and tests with current locked deps
+
+    - stage: "Tests"
+      name: "Tests"
+      install:
+        - yarn install --non-interactive
+      script:
+        - yarn lint:hbs
+        - yarn lint:js
+        - yarn test
+
+    - name: "Floating Dependencies"
+      script:
+        - yarn test
+
+    - stage: "Additional Tests"
+      env: EMBER_TRY_SCENARIO=ember-lts-3.4
+    - env: EMBER_TRY_SCENARIO=ember-lts-3.8
+    - env: EMBER_TRY_SCENARIO=ember-release
+    - env: EMBER_TRY_SCENARIO=ember-beta
 
 install:
-  - yarn install --pure-lockfile
-
-before_script:
-  - "export DISPLAY=:99.0"
-  - "sh -e /etc/init.d/xvfb start"
-  - sleep 3 # give xvfb some time to start
+  - yarn install --no-lockfile --non-interactive
 
 script:
-  - yarn lint:js
-  # Usually, it's ok to finish the test scenario without reverting
-  #  to the addon's original dependency state, skipping "cleanup".
-  - node_modules/.bin/ember try:one $EMBER_TRY_SCENARIO --skip-cleanup
+  - node_modules/.bin/ember try:one $EMBER_TRY_SCENARIO

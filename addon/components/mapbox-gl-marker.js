@@ -5,11 +5,16 @@ import { getProperties, get, set } from '@ember/object';
 import { run } from '@ember/runloop';
 import Component from '@ember/component';
 import layout from '../templates/components/mapbox-gl-marker';
-import MapboxGl from 'mapbox-gl';
 
+/**
+ * A utility that brokers HTTP requests...
+ *
+ * @class MapboxGlMarker
+ */
 export default Component.extend({
   layout,
 
+  MapboxGl: null,
   map: null,
   initOptions: null,
   lngLat: null,
@@ -54,7 +59,7 @@ export default Component.extend({
       get(getOwner(this).resolveRegistration('config:environment'), 'mapbox-gl.marker'),
       initOptions);
 
-    const marker = new MapboxGl.Marker(this.element, options)
+    const marker = new this.MapboxGl.Marker(this.element, options)
       .setLngLat(lngLat)
       .addTo(this.map);
 

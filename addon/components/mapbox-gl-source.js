@@ -10,6 +10,32 @@ import { assert } from '@ember/debug';
   Can be set to longLived so it is not destroyed along with its component.
 */
 
+/**
+  Adds a data source to the map. The API matches the mapbox [source docs](https://www.mapbox.com/mapbox-gl-js/api/#sources).
+
+  Example:
+  ```hbs
+  {{#mapbox-gl as |map|}}
+    {{#map.source options=(hash
+      type='geojson'
+      data=(hash
+        type='FeatureCollection'
+        features=(array
+          (hash
+            type='Feature'
+            geometry=(hash
+              type='Point'
+              coordinates=(array -96.7969879 32.7766642)
+            )
+          )
+        )
+      ))}}
+    {{/map.source}}
+  {{/mapbox-gl}}
+  ```
+
+  @class MapboxGLSource
+*/
 export default Component.extend({
   layout,
   tagName: '',
@@ -23,27 +49,38 @@ export default Component.extend({
   longLived: false,
 
   /**
-   * @param string
-   * @description The source options to add, conforming to the Mapbox Source spec.
-   * {@link https://www.mapbox.com/mapbox-gl-js/style-spec/#sources Mapbox}
+    @argument options
+    @type {Object}
+    @description
+    An options hash to set as the source.
+    - #### `options.type`
+      - A string detailing the map source type. Typically `geojson`.
+
+    - #### `options.data`
+      - A data hash for the map, following the source.data API detailed by mapbox docs.
   */
   options: null,
 
   /**
-   * @param object
+   * @property options
+   * @type {Object}
    * @description The ID of the source to add. Must not conflict with existing sources.
    * {@link https://www.mapbox.com/mapbox-gl-js/api/#map#addsource Mapbox}
   */
-  sourceId: computed(function() {
-    return this.get('idName') || guidFor(this);
+  sourceId: computed({
+    get() {
+      return this.get('idName') || guidFor(this);
+    },
+
+    set(k, v) {
+      return v;
+    }
   }),
 
   init() {
     this._super(...arguments);
 
-    if(this.longLived){
-      assert('need to pass idName if source is longLived', this.idName);
-    }
+    assert('Need to pass idName if source is longLived', !this.longLived || this.idName);
 
     // Add source to map if it is not already present
     const { sourceId, options } = getProperties(this, 'sourceId', 'options');

@@ -1,59 +1,55 @@
 import Service from '@ember/service';
-import EmberObject from '@ember/object';
-import { getOwner } from '@ember/application';
-import { assign } from '@ember/polyfills';
-import MapboxGl from 'mapbox-gl';
+import { get, set } from '@ember/object';
 
 /**
   This service serves as a 'cache' for the map instances and their html elements.
   The values are saved in a hash {element: element, map: map} and are used
   for optimizing the performance and rendering speed.
-  This service also contains the logic for creating the maps and elements.
 */
 
 export default Service.extend({
 
-
   init() {
     this._super(...arguments);
-    this.set('cachedMaps', EmberObject.create());
+    set(this, '_cachedMaps', new Map());
+  },
+
+  /*
+    @method hasMap
+    @param {key} Id of map
+    @return {Boolean} True if cachedMaps contains the map, false if not
+  */
+  hasMap(key) {
+    return get(this, '_cachedMaps').has(key);
   },
 
   /*
     @method getMap
-    @param {mapId} Id used to store a retrieve a cached map
-    @param {initOptions} Options for building the map according to Mapbox Specs
-    @param {longLived} If true, the map will be cached
-    @return {Object} Hash {element: element, map: map}
-    @description Returns a cached map if present, otherwise returns a new one
+    @param {key} Id of map
+    @return {MapLoaderInstance w/ HTML Element| false} Maploader instance of the key specified
   */
-  getMap(mapId, initOptions, longLived) {
-    let obj = this.get(`cachedMaps.${mapId}`) || this._createMap(initOptions, longLived);
-    return obj;
+  getMap(key) {
+    return get(this, '_cachedMaps').has(key) && get(this, '_cachedMaps').get(key);
   },
 
   /*
-    @method getMap
-    @param {initOptions} Options for building the map according to Mapbox Specs
-    @param {longLived} If true, the map will be cached
-    @return {Object} Hash {element: element, map: map}
-    @description Creates a new map instance and its html element
-    @private
+    @method setMap
+    @param {key} Id of map to save
+    @param {MapLoader Instance } MapLoader Instance of map
+    @param { HTML Element } Html element where map instance is rendered
+    @description Saves a new MapLoader Instance to cachedMaps
   */
-  _createMap(initOptions, longLived) {
-    //window.console.log('create map');
+  setMap(mapId, map, element) {
+    get(this, '_cachedMaps').set(mapId, { map, element });
+  },
 
-    //create map DOM element
-    let element = document.createElement('div');
-    // element.parentElement.className = mapClass;
-
-    //create map Instance
-    const mbglConfig = getOwner(this).resolveRegistration('config:environment')['mapbox-gl']; // get config from environment.js
-    const options = assign({}, mbglConfig.map, initOptions);
-    options.container = element;
-    let map = (new MapboxGl.Map(options));
-
-    return {element: element, map: map};
+  /*
+    @method deleteMap
+    @param {key} Id of map to save
+    @return {Boolean} True if map is deleted, false if not
+  */
+  deleteMap(mapId) {
+    return get(this, '_cachedMaps').delete(mapId);
   }
 
 });

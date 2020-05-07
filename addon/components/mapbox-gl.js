@@ -1,113 +1,124 @@
 import Component from '@ember/component';
-import { assert } from '@ember/debug';
-import { inject as service } from '@ember/service';
-import { get, set } from '@ember/object';
 import { getOwner } from '@ember/application';
-import { bind, next, scheduleOnce } from '@ember/runloop';
-import MapboxGl from 'mapbox-gl';
-import { assign } from '@ember/polyfills';
-import noop from 'ember-mapbox-gl/utils/noop';
-import layout from 'ember-mapbox-gl/templates/components/mapbox-gl';
+import { inject as service } from '@ember/service';
+import layout from '../templates/components/mapbox-gl';
+import MapboxLoader from '../-private/mapbox-loader';
+import { set } from '@ember/object';
+import { assert } from '@ember/debug';
 
 /**
-  This is the main component for creating a Mapbox GL Map.
-  Can be set to longLived so it is not destroyed along with its component.
-*/
+  Component that creates a new [mapbox-gl-js instance](https://www.mapbox.com/mapbox-gl-js/api/#map):
 
+  ```hbs
+  {{#mapbox-gl initOptions=initOptions mapLoaded=(action 'mapLoaded') as |map|}}
+
+  {{/mapbox-gl}}
+  ```
+
+  @class MapboxGL
+  @yield {Hash} map
+  @yield {Component} map.control
+  @yield {Component} map.layer
+  @yield {Component} map.marker
+  @yield {Component} map.on
+  @yield {Component} map.popup
+  @yield {Component} map.source
+*/
 export default Component.extend({
 
   classNames: ['map-wrapper'],
 
+  mapsService: service(),
+
   layout,
 
-  initOptions: null,
-
   /**
-   * @param boolean
+   * @argument boolean
    * @description Set to longLived to save the Map instance into the mapsService
   */
   longLived: false,
 
-  mapLoaded: noop,
-  mapsService: service(),
+  /**
+    If map is longLived, mapId should be passed, it's the key to identified the map to reload it from cache
+
+    @argument mapId
+    @type {String}
+  */
+  mapId: null,
+
+  /**
+    An action function to call when the map has finished loading. Note that the component does not yield until the map has loaded,
+    so this is the only way to listen for the mapbox load event.
+
+    @argument mapLoaded
+    @type {Function}
+  */
+  mapLoaded: null,
 
   init() {
     this._super(...arguments);
-
-    this.map = null;
-    this.glSupported = MapboxGl.supported();
-
-    const mbglConfig = getOwner(this).resolveRegistration('config:environment')['mapbox-gl'];
-    if(this.longLived){
-      assert('passing mapId to component is required', this.mapId);
-    }
-    assert('mapbox-gl config is required in config/environment', mbglConfig);
-    assert('mapbox-gl config must have an accessToken string', typeof mbglConfig.accessToken === 'string');
-
-    MapboxGl.accessToken = mbglConfig.accessToken;
+    
+    assert('Longlived maps require mapId as a string', !this.longLived || typeof this.mapId === 'string' || this.mapId instanceof String);
+    this._loader = MapboxLoader.create();
   },
 
   didInsertElement() {
     this._super(...arguments);
 
-    if (this.glSupported) {
-      scheduleOnce('afterRender', this, this._setup);
+    if (this.mapsService.hasMap(this.mapId)) {
+
+      let { map: mapLoader , element } = this.mapsService.getMap(this.mapId);
+      set(this, '_loader', mapLoader);
+
+      //append the map html element into component
+      this.element.appendChild(element);
+
+      //Call arg onReloaded if mas was retrieved from cache
+      mapLoader.map.hasLoaded && this.mapReloaded && this.mapReloaded(mapLoader.map);
+
+    } else {
+
+      const { accessToken, map } =
+        getOwner(this).resolveRegistration('config:environment')['mapbox-gl'] ||
+        {};
+  
+      const options = Object.assign({}, map, this.initOptions);
+
+      //create map DOM element
+      let element = document.createElement('div');
+      options.container = element;
+      this.element.appendChild(element);
+
+      this._loader.load(accessToken, options, this._onLoad.bind(this));
+
     }
 
   },
 
-  willDestroy() {
-    this._super(...arguments);
-
-    if (!this.longLived && this.map !== null) { //&& this.map !== null
-      // some map users may be late doing cleanup (seen with mapbox-draw-gl), so don't remove the map until the next tick
-      next(this.map, this.map.remove);
-    }
-  },
-
-  /*
-    @param {map} MapboxGL map instance
-    @description Run mapLoaded action if initial setup, otherwise run mapReload action
-  */
-  _setup() {
-
-    let obj = this.mapsService.getMap(this.mapId, this.initOptions, this.longLived);
-    //append the map html element into component
-    this.element.appendChild(obj.element);
-
-    let map = obj.map;
-    if(map.hasLoaded){
-      this._onReload(map);
-    }else{
-      map.once('load', bind(this, this._onLoad, map));
-    }
-    map.resize(); //this needs to be after since it sets map.loaded() to false;
-  },
-
-  /*
-    @param {map} MapboxGL map instance
-    @description Run mapLoaded action
-  */
   _onLoad(map) {
-    this.mapLoaded(map);
 
-    window[this.mapId] = map; //debug
-    set(this, 'map', map);
+    //this needs to be after since it sets map.loaded() to false;
+    map.resize();
 
     //cache map instance and DOM element
-    if(this.longLived){
+    if (this.longLived) {
       map.hasLoaded = true;
-      this.set(`mapsService.cachedMaps.${this.mapId}`, {element: map._container, map: map})
+      this.mapsService.setMap(this.mapId, this._loader, map._container);
     }
+
+    this.mapLoaded && this.mapLoaded(map);
   },
 
-  /*
-    @param {map} MapboxGL map instance
-    @description Run mapReload action
-  */
-  _onReload(map) {
-    this.mapReload(map);
-    set(this, 'map', map);
+  willDestroyElement() {
+    this._super(...arguments);
+
+    if (!this.longLived) {
+      this._loader.cancel();
+      //In case it was created longLived, and then retrieve and rendered without longLived
+      this.mapsService.hasMap(this.mapId) && this.mapsService.deleteMap(this.mapId);
+    }
+
+    !this.longLived && this._loader.cancel();
   }
 
 });
