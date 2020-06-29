@@ -1,4 +1,4 @@
-// import { getProperties, get, computed } from '@ember/object';
+// import { computed } from '@ember/object';
 // import { run } from '@ember/runloop';
 // import Component from '@ember/component';
 // import noop from 'ember-mapbox-gl/utils/noop';
@@ -68,8 +68,8 @@
 //   _origName: null,
 //   _imageSet: false,
 
-//   isSvg: computed('name', function() {
-//     const image = get(this, 'image');
+//   isSvg: computed('image', 'name', function () {
+//     const image = this.image;
 //     if (image === null || typeof image !== 'string') {
 //       return false;
 //     }
@@ -86,7 +86,7 @@
 //       this._imageSet = false;
 //     }
 
-//     const { image, isSvg, width, height } = getProperties(this, 'image', 'isSvg', 'width', 'height');
+//     const { image, isSvg, width, height } = this;
 //     if (image === null) {
 //       return;
 //     }
@@ -122,7 +122,8 @@
 //       return;
 //     }
 
-//     if (get(this, 'image') !== imageName) { // image has changed since we started loading
+//     if (this.image !== imageName) {
+//       // image has changed since we started loading
 //       return;
 //     }
 
@@ -130,7 +131,7 @@
 //       return this.onError(err);
 //     }
 
-//     const { name, options } = getProperties(this, 'name', 'options');
+//     const { name, options } = this;
 
 //     // map#addImage doesn't like null for options, only undefined or an object
 //     if (options === null) {
@@ -149,11 +150,11 @@
 //     const err = new Error('failed to load svg');
 //     err.ev = ev;
 //     this._onImage(imageName, err);
-//   }
+//   },
 // });
 
 // MapboxGlImageComponent.reopenClass({
-//   positionalParams: [ 'name', 'image', 'options' ]
+//   positionalParams: ['name', 'image', 'options'],
 // });
 
 // export default MapboxGlImageComponent;

@@ -1,8 +1,6 @@
 import { assert } from '@ember/debug';
 import { assign } from '@ember/polyfills';
 import { getOwner } from '@ember/application';
-import { getProperties, get, set } from '@ember/object';
-import { run } from '@ember/runloop';
 import Component from '@ember/component';
 import layout from '../templates/components/mapbox-gl-marker';
 
@@ -13,6 +11,7 @@ import layout from '../templates/components/mapbox-gl-marker';
  */
 export default Component.extend({
   layout,
+  tagName: '',
 
   MapboxGl: null,
   map: null,
@@ -22,47 +21,43 @@ export default Component.extend({
   init() {
     this._super(...arguments);
 
-    this.marker = null;
-  },
+    this.domContent = document.createElement('div');
+    const { lngLat, initOptions } = this;
 
-  didInsertElement() {
-    this._super(...arguments);
+    assert(
+      'mapbox-gl-marker requires lngLat, maybe you passed latLng?',
+      lngLat
+    );
 
-    run.scheduleOnce('afterRender', this, this._setup);
+    const options = assign(
+      {},
+      (
+        getOwner(this).resolveRegistration('config:environment')['mapbox-gl'] ??
+        {}
+      ).marker,
+      initOptions
+    );
+
+    this.marker = new this.MapboxGl.Marker(this.domContent, options)
+      .setLngLat(lngLat)
+      .addTo(this.map);
   },
 
   didUpdateAttrs() {
     this._super(...arguments);
 
-    if (this.marker !== null) {
-      const lngLat = get(this, 'lngLat');
-      assert('mapbox-gl-marker requires lngLat, maybe you passed latLng?', lngLat);
+    const lngLat = this.lngLat;
+    assert(
+      'mapbox-gl-marker requires lngLat, maybe you passed latLng?',
+      lngLat
+    );
 
-      this.marker.setLngLat(lngLat);
-    }
+    this.marker.setLngLat(lngLat);
   },
 
   willDestroy() {
     this._super(...arguments);
 
-    if (this.marker !== null) {
-      this.marker.remove();
-    }
+    this.marker.remove();
   },
-
-  _setup() {
-    const { lngLat, initOptions } = getProperties(this, 'lngLat', 'initOptions');
-
-    assert('mapbox-gl-marker requires lngLat, maybe you passed latLng?', lngLat);
-
-    const options = assign({},
-      get(getOwner(this).resolveRegistration('config:environment'), 'mapbox-gl.marker'),
-      initOptions);
-
-    const marker = new this.MapboxGl.Marker(this.element, options)
-      .setLngLat(lngLat)
-      .addTo(this.map);
-
-    set(this, 'marker', marker);
-  }
 });

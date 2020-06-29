@@ -1,8 +1,8 @@
-import { scheduleOnce } from '@ember/runloop';
-import { getProperties, get, computed } from '@ember/object';
-import { guidFor } from '@ember/object/internals';
 import Component from '@ember/component';
 import layout from '../templates/components/mapbox-gl-source';
+import { scheduleOnce } from '@ember/runloop';
+import { computed } from '@ember/object';
+import { guidFor } from '@ember/object/internals';
 import { assert } from '@ember/debug';
 
 /**
@@ -66,7 +66,7 @@ export default Component.extend({
    * @type {Object}
    * @description The ID of the source to add. Must not conflict with existing sources.
    * {@link https://www.mapbox.com/mapbox-gl-js/api/#map#addsource Mapbox}
-  */
+   */
   sourceId: computed({
     get() {
       return this.get('idName') || guidFor(this);
@@ -74,7 +74,7 @@ export default Component.extend({
 
     set(k, v) {
       return v;
-    }
+    },
   }),
 
   init() {
@@ -83,11 +83,11 @@ export default Component.extend({
     assert('Need to pass idName if source is longLived', !this.longLived || this.idName);
 
     // Add source to map if it is not already present
-    const { sourceId, options } = getProperties(this, 'sourceId', 'options');
+    const { sourceId, options } = this;
 
-    if(!this.map.getSource(sourceId)){
+    if (!this.map.getSource(sourceId)) {
       //window.console.log('add source to map');
-      if(!options.data){
+      if (!options.data) {
         /*
           This allows you to send data as null without causing an error en first render.
           Subsecuent renders only unhide the layer, so if data is required by an
@@ -96,7 +96,7 @@ export default Component.extend({
         options.data = {'type': 'FeatureCollection', 'features': []};
       }
       this.map.addSource(sourceId, options);
-    }else{
+    } else {
       /*
         When a map is longLived, this allows setting a source's data on the
         init of subsecuent renders if the value is present. If the value is
@@ -113,12 +113,12 @@ export default Component.extend({
   didUpdateAttrs() {
     this._super(...arguments);
 
-    const { sourceId, options } = getProperties(this, 'sourceId', 'options');
+    const { sourceId, options } = this;
 
     if (options) {
       if (options.data) {
         this.map.getSource(sourceId).setData(options.data);
-      }else if (options.coordinates) {
+      } else if (options.coordinates) {
         // used for images and video https://www.mapbox.com/mapbox-gl-js/api#imagesource#setcoordinates
         this.map.getSource(sourceId).setCoordinates(options.coordinates);
       }
@@ -128,12 +128,11 @@ export default Component.extend({
   willDestroy() {
     this._super(...arguments);
 
-    if(!this.longLived){
+    if (!this.longLived) {
       //window.console.log('destroy source');
-      const sourceId = get(this, 'sourceId');
       // wait for any layers to be removed before removing the source
-      scheduleOnce('afterRender', this.map, this.map.removeSource, sourceId);
+      scheduleOnce('afterRender', this.map, this.map.removeSource, this.sourceId);
     }
-
   }
+
 });

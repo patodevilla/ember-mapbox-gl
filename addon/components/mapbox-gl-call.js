@@ -1,5 +1,4 @@
 // import { assert } from '@ember/debug';
-// import { getProperties } from '@ember/object';
 // import { scheduleOnce, cancel } from '@ember/runloop';
 // import Component from '@ember/component';
 
@@ -22,20 +21,36 @@
 //   didReceiveAttrs() {
 //     this._super(...arguments);
 
-//     let { obj, func, args, params } = getProperties(this, 'obj', 'func', 'args', 'params');
+//     let { obj, func, args, params } = this;
 //     if (args === null && params !== null) {
 //       if (func !== null) {
 //         args = params;
 //       } else {
-//         [ func, ...args ] = params;
+//         [func, ...args] = params;
 //       }
 //     }
 
-//     assert('mapbox-gl-call obj is required', typeof obj === 'object' && obj !== null);
-//     assert('mapbox-gl-call func is required and must be a string', typeof func === 'string');
-//     assert(`mapbox-gl-call ${func} must be a function on ${obj}`, typeof obj[func] === 'function');
+//     assert(
+//       'mapbox-gl-call obj is required',
+//       typeof obj === 'object' && obj !== null
+//     );
+//     assert(
+//       'mapbox-gl-call func is required and must be a string',
+//       typeof func === 'string'
+//     );
+//     assert(
+//       `mapbox-gl-call ${func} must be a function on ${obj}`,
+//       typeof obj[func] === 'function'
+//     );
 
-//     this._scheduledCall = scheduleOnce('afterRender', this, this._call, obj, func, args);
+//     this._scheduledCall = scheduleOnce(
+//       'afterRender',
+//       this,
+//       this._call,
+//       obj,
+//       func,
+//       args
+//     );
 //   },
 
 //   willDestroy() {
@@ -50,11 +65,11 @@
 //     this._scheduledCall = null;
 
 //     this.onResp(obj[func].apply(obj, args));
-//   }
+//   },
 // });
 
 // MapboxGlCallComponent.reopenClass({
-//   positionalParams: 'params'
+//   positionalParams: 'params',
 // });
 
 // export default MapboxGlCallComponent;

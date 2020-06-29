@@ -1,5 +1,6 @@
 import { assign } from '@ember/polyfills';
-import { getProperties, get, computed } from '@ember/object';
+import { computed } from '@ember/object';
+import { getOwner } from '@ember/application';
 import { reads } from '@ember/object/computed';
 import Component from '@ember/component';
 import { assert } from '@ember/debug';
@@ -10,9 +11,9 @@ import { assert } from '@ember/debug';
 */
 
 /**
-  Adds a data source to the map. 
+  Adds a data source to the map.
   The API matches the mapbox [source docs](https://www.mapbox.com/mapbox-gl-js/api/#sources).
- 
+
   Example:
   ```hbs
   {{#mapbox-gl as |map|}}
@@ -53,7 +54,7 @@ export default Component.extend({
   /**
     @argument layer
     @type {Object}
-    @description 
+    @description
     A hash to pass on to the mapbox [layer](https://www.mapbox.com/mapbox-gl-js/style-spec/#layers).
   */
   layer: null,
@@ -61,7 +62,7 @@ export default Component.extend({
   /**
     @argument before
     @type {String}
-    @description 
+    @description
     The ID of an existing layer to insert the new layer before.
     If this argument is omitted, the layer will be appended to the end of the layers array.
   */
@@ -77,62 +78,64 @@ export default Component.extend({
    * @property _layerId
    * @private the id of the layer bound to this component
    */
-  _layerId: computed('layer.id', function() {
-    return get(this, 'layer.id');
+  _layerId: computed('layer.id', function () {
+    return this.layer?.id;;
   }).readOnly(),
 
   /**
    * @property _layerType
    * @private
    */
-  _layerType: computed('layer.type', function() {
-    return get(this, 'layer.type');
+  _layerType: computed('layer.type', function () {
+    return this.layer?.type;
   }).readOnly(),
 
-  _layout: computed('layer.layout', function() {
-    return assign({}, get(this, 'layer.layout'));
+  _envConfig: computed('_layerType', function () {
+    const config = getOwner(this).resolveRegistration('config:environment');
+    return (config['mapbox-gl'] ?? {})[this._layerType];
   }).readOnly(),
 
-  _paint: computed('layer.paint', function() {
-    return assign({}, get(this, 'layer.paint'));
+  _layout: computed('_envConfig.layout', 'layer.layout', function () {
+    return assign({}, this._envConfig?.layout, this.layer?.layout);
   }).readOnly(),
 
-  _layer: computed('layer', '_layerId', '_layerType', '_sourceId', '_layout', '_paint', function() {
-    const {
-      layer,
-      _layerId,
-      _layerType,
-      _sourceId,
-      _layout,
-      _paint
-    } = getProperties(this, 'layer', '_layerId', '_layerType', '_sourceId', '_layout', '_paint');
+  _paint: computed('_envConfig.paint', 'layer.paint', function () {
+    return assign({}, this._envConfig?.paint, this.layer?.paint);
+  }).readOnly(),
 
-    const computedLayer = {
-      id: _layerId,
-      type: _layerType,
-      source: _sourceId,
-      layout: _layout,
-      paint: _paint
-    };
-
-    // do this to pick up other properties like filter, re, metadata, source-layer, minzoom, maxzoom, etc
-    return assign({}, layer, computedLayer);
-  }),
+  _layer: computed(
+    'layer',
+    '_layerId',
+    '_layerType',
+    '_sourceId',
+    '_layout',
+    '_paint',
+    function () {
+      // do this to pick up other properties like filter, re, metadata, source-layer, minzoom, maxzoom, etc
+      return assign({}, this.layer, {
+        id: this._layerId,
+        type: this._layerType,
+        source: this._sourceId,
+        layout: this._layout,
+        paint: this._paint,
+      });
+    }
+  ).readOnly(),
 
   init() {
     this._super(...arguments);
 
-    assert("layer type needs to be specified", get(this, 'layer.type'));
-    assert("layer id needs to be specified", get(this, 'layer.id'));
+    assert('layer type needs to be specified', this.layer.type);
+    assert('layer id needs to be specified', this.layer.id);
     
-    const { _layer, before } = getProperties(this, '_layer', 'before');
+    const { _layer, before } = this;
 
-    if(this.map.getLayer(this._layerId)){
+    if (this.map.getLayer(this._layerId)) {
       //window.console.log('unhide layer');
-      this.map.setLayoutProperty(this._layerId, "visibility", "visible");
-    }else{
+      this.map.setLayoutProperty(this._layerId, 'visibility', 'visible');
+    } else {
       //window.console.log('add layer');
-      this.map.addLayer(_layer, before);
+      this.map.addLayer(this._layer, this.before);
     }
 
   },
@@ -140,7 +143,7 @@ export default Component.extend({
   didUpdateAttrs() {
     this._super(...arguments);
 
-    const _layer = get(this, '_layer');
+    const { _layer } = this;
 
     for (const k in _layer.layout) {
       this.map.setLayoutProperty(_layer.id, k, _layer.layout[k]);
@@ -162,12 +165,11 @@ export default Component.extend({
 
     if (this.longLived) {
       //window.console.log('hide layer');
-      this.map.setLayoutProperty(get(this, '_layerId'), "visibility", "none");
+      this.map.setLayoutProperty(this._layerId, 'visibility', 'none');
     } else {
       //window.console.log('remove layer');
-      this.map.removeLayer(get(this, '_layerId'));
+      this.map.removeLayer(this._layerId);
     }
-
   }
 
 });

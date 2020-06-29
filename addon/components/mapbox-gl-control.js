@@ -1,4 +1,3 @@
-import { getProperties } from '@ember/object';
 import Component from '@ember/component';
 import { assert } from '@ember/debug';
 
@@ -55,9 +54,6 @@ const MapboxGlControlComponent = Component.extend({
     this._hideOrRemoveControl();
   },
 
-
-
-
   /*
     @method _hideOrRemoveControl
     @description If the control is longLived hide it, otherwise remove the control from the map instance
@@ -85,7 +81,7 @@ const MapboxGlControlComponent = Component.extend({
       this._prevControl._container.classList.remove("hide");
     }else{
       //add new control
-      const { control, position } = getProperties(this, 'control', 'position');
+      const { control, position } = this;
       control.idName = this.idName
       this.map.addControl(control, position);
       this._prevControl = control;
@@ -99,7 +95,7 @@ const MapboxGlControlComponent = Component.extend({
     @private
   */
   _updateControl(){
-    const { control, position } = getProperties(this, 'control', 'position');
+    const { control, position } = this;
     //remove
     if (this._prevControl !== null) {
       this.map.removeControl(this._prevControl);
@@ -130,7 +126,7 @@ const MapboxGlControlComponent = Component.extend({
 });
 
 MapboxGlControlComponent.reopenClass({
-  positionalParams: [ 'control', 'position' ]
+  positionalParams: ['control', 'position'],
 });
 
 export default MapboxGlControlComponent;
