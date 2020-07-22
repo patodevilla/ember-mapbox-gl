@@ -1,4 +1,3 @@
-import { getProperties } from '@ember/object';
 import Component from '@ember/component';
 import { assert } from '@ember/debug';
 
@@ -9,6 +8,11 @@ import { assert } from '@ember/debug';
   second positionalParam is the control position
 */
 
+/**
+ * Add a map control.
+ *
+ * @class MapboxGlControlComponent
+ */
 const MapboxGlControlComponent = Component.extend({
   tagName: '',
 
@@ -30,9 +34,9 @@ const MapboxGlControlComponent = Component.extend({
 
   init() {
     this._super(...arguments);
-    if(this.longLived){
-      assert('need to pass idName if control is longLived', this.idName);
-    }
+
+    assert('Need to pass idName if control is longLived', !this.longLived || this.idName);
+
     //get _prevControl if there is one present in the map instance
     this._prevControl = this.getControlFromMap(this.idName) || null;
     this._unhideOrAddControl();
@@ -49,9 +53,6 @@ const MapboxGlControlComponent = Component.extend({
     this._super(...arguments);
     this._hideOrRemoveControl();
   },
-
-
-
 
   /*
     @method _hideOrRemoveControl
@@ -80,7 +81,7 @@ const MapboxGlControlComponent = Component.extend({
       this._prevControl._container.classList.remove("hide");
     }else{
       //add new control
-      const { control, position } = getProperties(this, 'control', 'position');
+      const { control, position } = this;
       control.idName = this.idName
       this.map.addControl(control, position);
       this._prevControl = control;
@@ -94,7 +95,7 @@ const MapboxGlControlComponent = Component.extend({
     @private
   */
   _updateControl(){
-    const { control, position } = getProperties(this, 'control', 'position');
+    const { control, position } = this;
     //remove
     if (this._prevControl !== null) {
       this.map.removeControl(this._prevControl);
@@ -125,7 +126,7 @@ const MapboxGlControlComponent = Component.extend({
 });
 
 MapboxGlControlComponent.reopenClass({
-  positionalParams: [ 'control', 'position' ]
+  positionalParams: ['control', 'position'],
 });
 
 export default MapboxGlControlComponent;

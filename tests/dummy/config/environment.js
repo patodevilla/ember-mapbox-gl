@@ -1,6 +1,6 @@
 'use strict';
 
-module.exports = function(environment) {
+module.exports = function (environment) {
   let ENV = {
     modulePrefix: 'dummy',
     environment,
@@ -9,12 +9,12 @@ module.exports = function(environment) {
     EmberENV: {
       FEATURES: {
         // Here you can enable experimental features on an ember canary build
-        // e.g. 'with-controller': true
+        // e.g. EMBER_NATIVE_DECORATOR_SUPPORT: true
       },
       EXTEND_PROTOTYPES: {
         // Prevent Ember Data from overriding Date.parse.
-        Date: false
-      }
+        Date: false,
+      },
     },
 
     APP: {
@@ -23,11 +23,12 @@ module.exports = function(environment) {
     },
 
     'mapbox-gl': {
-      accessToken: 'pk.eyJ1Ijoia3R1cm5leSIsImEiOiJjajFudmQ2Z2owMDBiMnlyd3FtZDl2dDlkIn0.5uUKBumz-7IWM_2PQ6cXQw',
+      accessToken:
+        'pk.eyJ1Ijoia3R1cm5leSIsImEiOiJjajFudmQ2Z2owMDBiMnlyd3FtZDl2dDlkIn0.5uUKBumz-7IWM_2PQ6cXQw',
       map: {
-        style: 'mapbox://styles/mapbox/streets-v9?optimize=true'
-      }
-    }
+        style: 'mapbox://styles/mapbox/streets-v9?optimize=true',
+      },
+    },
   };
 
   if (environment === 'development') {
@@ -48,6 +49,11 @@ module.exports = function(environment) {
 
     ENV.APP.rootElement = '#ember-testing';
     ENV.APP.autoboot = false;
+  }
+
+  if (environment === 'production') {
+    // Allow ember-cli-addon-docs to update the rootURL in compiled assets
+    ENV.rootURL = 'ADDON_DOCS_ROOT_URL';
   }
 
   return ENV;

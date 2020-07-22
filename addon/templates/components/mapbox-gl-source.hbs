@@ -1,3 +1,5 @@
-{{yield (hash
-  layer=(component 'mapbox-gl-layer' map=map _sourceId=sourceId longLived=longLived)
-)}}
+{{yield
+  (hash
+    layer=(component 'mapbox-gl-layer' map=this.map _sourceId=this.sourceId longLived=this.longLived)
+  )
+}}

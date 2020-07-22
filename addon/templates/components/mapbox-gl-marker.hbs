@@ -1,5 +1,7 @@
-{{#if marker}}
-  {{yield (hash
-    popup=(component 'mapbox-gl-popup' marker=marker)
-  )}}
-{{/if}}
+{{#in-element this.domContent}}
+  {{yield
+    (hash
+      popup=(component 'mapbox-gl-popup' marker=this.marker MapboxGl=this.MapboxGl)
+    )
+  }}
+{{/in-element}}

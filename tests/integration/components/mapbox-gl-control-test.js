@@ -1,21 +1,14 @@
-import { Map } from 'mapbox-gl';
 import { module, test } from 'qunit';
 import { setupRenderingTest } from 'ember-qunit';
 import { render } from '@ember/test-helpers';
-import hbs from 'htmlbars-inline-precompile';
+import { hbs } from 'ember-cli-htmlbars';
+import setupMap from '../../helpers/create-map';
 
-module('Integration | Component | mapbox gl control', function(hooks) {
+module('Integration | Component | mapbox gl control', function (hooks) {
   setupRenderingTest(hooks);
+  setupMap(hooks);
 
-  hooks.before(function() {
-    this.map = new Map({ container: document.createElement('div') });
-  });
-
-  hooks.after(function() {
-    this.map.remove();
-  });
-
-  test('it renders', async function(assert) {
+  test('it renders', async function (assert) {
     assert.expect(0);
 
     await render(hbs`{{mapbox-gl-control map=map}}`);
