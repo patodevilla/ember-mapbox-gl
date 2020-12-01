@@ -77,7 +77,7 @@ export default Component.extend({
 
     let map = obj.map;
     if(map.hasLoaded){
-      this._onReload(map);
+      next(this, this._onReload, map);
     }else{
       map.once('load', bind(this, this._onLoad, map));
     }
