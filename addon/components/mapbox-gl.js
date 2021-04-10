@@ -74,6 +74,7 @@ export default Component.extend({
       this.element.appendChild(element);
 
       //Call arg onReloaded if mas was retrieved from cache
+      mapLoader.map.resize();
       mapLoader.map.hasLoaded && this.mapReloaded && this.mapReloaded(mapLoader.map);
 
     } else {
