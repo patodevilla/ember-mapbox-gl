@@ -87,7 +87,7 @@ export default Component.extend({
 
     if (!this.map.getSource(sourceId)) {
       //window.console.log('add source to map');
-      if (!options.data) {
+      if (options.type == 'geojson' && !options.data) {
         /*
           This allows you to send data as null without causing an error en first render.
           Subsecuent renders only unhide the layer, so if data is required by an
