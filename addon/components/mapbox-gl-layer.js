@@ -48,7 +48,7 @@ export default Component.extend({
   /**
    * @param boolean
    * @description Set to longLived so it is not destroyed along with its component
-  */
+   */
   longLived: false,
 
   /**
@@ -79,7 +79,7 @@ export default Component.extend({
    * @private the id of the layer bound to this component
    */
   _layerId: computed('layer.id', function () {
-    return this.layer?.id;;
+    return this.layer?.id;
   }).readOnly(),
 
   /**
@@ -127,7 +127,7 @@ export default Component.extend({
 
     assert('layer type needs to be specified', this.layer.type);
     assert('layer id needs to be specified', this.layer.id);
-    
+
     const { _layer, before } = this;
 
     if (this.map.getLayer(this._layerId)) {
@@ -137,7 +137,6 @@ export default Component.extend({
       //window.console.log('add layer');
       this.map.addLayer(this._layer, this.before);
     }
-
   },
 
   didUpdateAttrs() {
@@ -170,6 +169,5 @@ export default Component.extend({
       //window.console.log('remove layer');
       this.map.removeLayer(this._layerId);
     }
-  }
-
+  },
 });
