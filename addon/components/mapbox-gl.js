@@ -25,7 +25,6 @@ import { assert } from '@ember/debug';
   @yield {Component} map.source
 */
 export default Component.extend({
-
   classNames: ['map-wrapper'],
 
   mapsService: service(),
@@ -35,7 +34,7 @@ export default Component.extend({
   /**
    * @argument boolean
    * @description Set to longLived to save the Map instance into the mapsService
-  */
+   */
   longLived: false,
 
   /**
@@ -57,8 +56,13 @@ export default Component.extend({
 
   init() {
     this._super(...arguments);
-    
-    assert('Longlived maps require mapId as a string', !this.longLived || typeof this.mapId === 'string' || this.mapId instanceof String);
+
+    assert(
+      'Longlived maps require mapId as a string',
+      !this.longLived ||
+        typeof this.mapId === 'string' ||
+        this.mapId instanceof String
+    );
     this._loader = MapboxLoader.create();
   },
 
@@ -66,8 +70,7 @@ export default Component.extend({
     this._super(...arguments);
 
     if (this.mapsService.hasMap(this.mapId)) {
-
-      let { map: mapLoader , element } = this.mapsService.getMap(this.mapId);
+      let { map: mapLoader, element } = this.mapsService.getMap(this.mapId);
       set(this, '_loader', mapLoader);
 
       //append the map html element into component
@@ -75,14 +78,14 @@ export default Component.extend({
 
       //Call arg onReloaded if mas was retrieved from cache
       mapLoader.map.resize();
-      mapLoader.map.hasLoaded && this.mapReloaded && this.mapReloaded(mapLoader.map);
-
+      mapLoader.map.hasLoaded &&
+        this.mapReloaded &&
+        this.mapReloaded(mapLoader.map);
     } else {
-
       const { accessToken, map } =
         getOwner(this).resolveRegistration('config:environment')['mapbox-gl'] ||
         {};
-  
+
       const options = Object.assign({}, map, this.initOptions);
 
       //create map DOM element
@@ -91,13 +94,10 @@ export default Component.extend({
       this.element.appendChild(element);
 
       this._loader.load(accessToken, options, this._onLoad.bind(this));
-
     }
-
   },
 
   _onLoad(map) {
-
     //this needs to be after since it sets map.loaded() to false;
     map.resize();
 
@@ -116,10 +116,8 @@ export default Component.extend({
     if (!this.longLived) {
       this._loader.cancel();
       //In case it was created longLived, and then retrieve and rendered without longLived
-      this.mapsService.hasMap(this.mapId) && this.mapsService.deleteMap(this.mapId);
+      this.mapsService.hasMap(this.mapId) &&
+        this.mapsService.deleteMap(this.mapId);
     }
-
-    !this.longLived && this._loader.cancel();
-  }
-
+  },
 });
