@@ -22,7 +22,8 @@ export default Component.extend({
     this._super(...arguments);
 
     this.domContent = document.createElement('div');
-    const { lngLat, initOptions } = this;
+    const { lngLat, initOptions, markerClasses } = this;
+    this.domContent.classList.add(markerClasses);
 
     assert(
       'mapbox-gl-marker requires lngLat, maybe you passed latLng?',
